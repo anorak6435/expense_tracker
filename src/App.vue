@@ -33,14 +33,23 @@
     <div class="formular">
       <input type="text" placeholder="Description (e.g. Salary, Groceries)" ref="description" />
       <input type="number" placeholder="Amount (e.g. 100 or -50)" ref="amount" />
+      <label for="when">Transaction date:</label>
+      <input type="date" id="when" name="when" placeholder="" ref="when" />
       <button @click="add_transaction">Add Transaction</button>
     </div>
     
 
     <!-- Transaction List -->
     <ul class="transaction-list" ref="transactions">
+      <!-- Header for the transactions list -->
+      <li class="transaction">
+        <span>Description</span>
+        <span>Date</span>
+        <span>Amount</span>
+      </li>
       <li v-for="(payment, key) in trans_abs" :key="key" class="transaction" :class="{expense: payment.amount < 0, income: payment.amount >= 0}">
         <span>{{payment.description}}</span>
+        <span>{{payment.when}}</span>
         <span><span v-if="payment.is_income">+</span>
         <span v-else>-</span> €{{payment.abs}}</span>
       </li>
@@ -55,7 +64,7 @@ export default {
   data() {
     return {
       warnings: [],
-      transactions: [{description: "Salary", amount: 2500}, {description: "Groceries", amount: -150}, {description: "Movie tickets", amount: -40}, {description: "Book", amount: -25}],
+      transactions: [{description: "Salary", amount: 2500, when: "2025-07-01"}, {description: "Groceries", amount: -150, when: "2025-07-15"}, {description: "Movie tickets", amount: -40, when: "2025-07-20"}, {description: "Book", amount: -25, when: "2025-08-05"}],
     }
   },
   methods: {
@@ -63,18 +72,19 @@ export default {
       console.log("New Transaction");
       let desc = this.$refs.description.value;
       let amnt = parseFloat(this.$refs.amount.value);
+      let when = this.$refs.when.value;
 
-      let no_warnings = this.verify_transaction_form(desc, amnt);
+      let no_warnings = this.verify_transaction_form(desc, amnt, when);
       if (no_warnings) {
-        this.transactions.push({"description": desc, "amount": amnt})
+        this.transactions.push({"description": desc, "amount": amnt, "when": when})
         // when succesfully added clear the contents of the form.
         this.$refs.description.value = "";
         this.$refs.amount.value = "";
       }
-      console.log(desc, amnt);
-      console.log(typeof amnt)
+      console.log(desc, amnt, when);
+      console.log(typeof when)
     },
-    verify_transaction_form(desc, amnt) {
+    verify_transaction_form(desc, amnt, when) {
       this.warnings = [];
       if (desc == "") {
         this.warnings.push("Add a description");
@@ -84,6 +94,9 @@ export default {
       }
       if (isNaN(amnt)) {
         this.warnings.push("Please enter a number for the amount");
+      }
+      if (when == "") {
+        this.warnings.push("Please add the date of this transaction.")
       }
       return this.warnings.length == 0;
     }
@@ -185,6 +198,7 @@ nav a.router-link-exact-active {
       display: flex;
       flex-direction: column;
       margin-bottom: 2rem;
+      text-align: left;
     }
 
     .formular input, .formular button {
@@ -219,12 +233,22 @@ nav a.router-link-exact-active {
 
     .transaction {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       padding: 0.75rem 1rem;
       margin-bottom: 0.5rem;
       border-radius: 5px;
       background-color: #f9f9f9;
       border-left: 6px solid #ccc;
+    }
+
+    .transaction span {
+      flex: 1;
+    }
+    .transaction span:first-child {
+      text-align: left;
+    }
+    .transaction span:last-child {
+      text-align: right;
     }
 
     .transaction.income {
