@@ -33,6 +33,8 @@
     <div class="formular">
       <input type="text" placeholder="Description (e.g. Salary, Groceries)" ref="description" />
       <input type="number" placeholder="Amount (e.g. 100 or -50)" ref="amount" />
+      <input type="text" placeholder="From where" ref="from" />
+      <input type="text" placeholder="To where" ref="to" />
       <label for="when">Transaction date:</label>
       <input type="date" id="when" name="when" placeholder="" ref="when" />
       <button @click="add_transaction">Add Transaction</button>
@@ -45,11 +47,15 @@
       <li class="transaction">
         <span>Description</span>
         <span>Date</span>
+        <span>From</span>
+        <span>To</span>
         <span>Amount</span>
       </li>
       <li v-for="(payment, key) in trans_abs" :key="key" class="transaction" :class="{expense: payment.amount < 0, income: payment.amount >= 0}">
         <span>{{payment.description}}</span>
         <span>{{payment.when}}</span>
+        <span>{{payment.from}}</span>
+        <span>{{payment.to}}</span>
         <span><span v-if="payment.is_income">+</span>
         <span v-else>-</span> €{{payment.abs}}</span>
       </li>
@@ -64,7 +70,7 @@ export default {
   data() {
     return {
       warnings: [],
-      transactions: [{description: "Salary", amount: 2500, when: "2025-07-01"}, {description: "Groceries", amount: -150, when: "2025-07-15"}, {description: "Movie tickets", amount: -40, when: "2025-07-20"}, {description: "Book", amount: -25, when: "2025-08-05"}],
+      transactions: [{description: "Salary", amount: 2500, when: "2025-07-01", from: "Work", to: "Checking"}, {description: "Groceries", amount: -150, when: "2025-07-15", from: "Checking", to: "Market"}, {description: "Movie tickets", amount: -40, when: "2025-07-20", from: "Checking", to: "Cinema"}, {description: "Book", amount: -25, when: "2025-08-05", from: "Checking", to: "Market"}],
     }
   },
   methods: {
@@ -73,18 +79,23 @@ export default {
       let desc = this.$refs.description.value;
       let amnt = parseFloat(this.$refs.amount.value);
       let when = this.$refs.when.value;
+      let from = this.$refs.from.value;
+      let to = this.$refs.to.value;
 
-      let no_warnings = this.verify_transaction_form(desc, amnt, when);
+      let no_warnings = this.verify_transaction_form(desc, amnt, when, from, to);
       if (no_warnings) {
-        this.transactions.push({"description": desc, "amount": amnt, "when": when})
+        this.transactions.push({"description": desc, "amount": amnt, "when": when, "from": from, "to": to})
         // when succesfully added clear the contents of the form.
         this.$refs.description.value = "";
         this.$refs.amount.value = "";
+        this.$refs.when.value = "";
+        this.$refs.from.value = "";
+        this.$refs.to.value = "";
       }
       console.log(desc, amnt, when);
       console.log(typeof when)
     },
-    verify_transaction_form(desc, amnt, when) {
+    verify_transaction_form(desc, amnt, when, from, to) {
       this.warnings = [];
       if (desc == "") {
         this.warnings.push("Add a description");
@@ -97,6 +108,12 @@ export default {
       }
       if (when == "") {
         this.warnings.push("Please add the date of this transaction.")
+      }
+      if (from == "") {
+        this.warnings.push("Add a from description");
+      }
+      if (to == "") {
+        this.warnings.push("Add a to description");
       }
       return this.warnings.length == 0;
     }
